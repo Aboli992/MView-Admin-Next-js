@@ -1,0 +1,88 @@
+import type { PageName } from './types';
+
+export const OPS_PAGES: PageName[] = [
+  'ops-pulse', 'ops-submit', 'ops-weekly', 'ops-quarterly',
+  'ops-team', 'ops-files', 'ops-pipelines',
+];
+
+export const CONST_PAGES: PageName[] = [
+  'constitution', 'const-propose', 'const-review',
+  'const-upload', 'const-audit', 'const-notify',
+];
+
+export const CRUMBS: Record<PageName, string> = {
+  dashboard: 'Dashboard',
+  'ops-pulse': 'Operations · Daily Pulse',
+  'ops-submit': 'Operations · Submit Update',
+  'ops-weekly': 'Operations · Weekly Reports',
+  'ops-quarterly': 'Operations · Quarterly Review',
+  'ops-team': 'Operations · Team',
+  'ops-files': 'Operations · Files',
+  'ops-pipelines': 'Operations · Pipelines',
+  constitution: 'Constitution · Read',
+  'const-propose': 'Constitution · Propose Change',
+  'const-review': 'Constitution · Review Queue',
+  'const-upload': 'Constitution · Upload Changes',
+  'const-audit': 'Constitution · Audit Log',
+  'const-notify': 'Constitution · Notifications',
+  owners: 'Mineral Owners',
+  engagement: 'Engagement Intelligence',
+  claims: 'Claim Pipeline',
+  campaigns: 'Campaigns',
+  audiences: 'Custom Audiences',
+  abtesting: 'A/B Testing',
+  'entity-pages': 'Entity Pages',
+  llmo: 'LLMO Generation',
+  seo: 'SEO Performance',
+  website: 'Website Pages',
+  growth: 'Growth Overview',
+  analytics: 'Analytics',
+  crm: 'CRM / GHL',
+  settings: 'Settings',
+};
+
+export const MANUAL_MEMBERS = [
+  'Nikhil Salunke',
+  'Pranav Nandeshwar',
+  'Vaishnavi Dhawale',
+  'Tushar Patil',
+  'Ruchita Vitkar',
+  'Riya Wankhade',
+  'Aboli Mundralkar',
+  'Pragati Dhumal',
+  'Utkarsha Chougule',
+  'Vedika Kannawar',
+  'Sanskriti Choudante',
+  'Gautami Kamath',
+  'Rohit Pandey',
+  'Ajay Landge',
+  'Krishna Sable',
+  'Shubham Kamble',
+  'Tejas Zurange',
+  'Sanket Nandanwar',
+  'Dhiraj Kakade',
+  'Pooja Wable',
+];
+
+export const MANUAL_MEMBER_LABELS: Record<string, string> = {
+  'Nikhil Salunke': 'Nikhil Salunke (@3brains)',
+  'Pranav Nandeshwar': 'Pranav Nandeshwar (@3brains)',
+  'Vaishnavi Dhawale': 'Vaishnavi Dhawale (@database)',
+  'Tushar Patil': 'Tushar Patil (@build)',
+  'Ruchita Vitkar': 'Ruchita Vitkar (@intake)',
+  'Riya Wankhade': 'Riya Wankhade (@intake)',
+  'Aboli Mundralkar': 'Aboli Mundralkar (@build)',
+  'Pragati Dhumal': 'Pragati Dhumal (@build)',
+  'Utkarsha Chougule': 'Utkarsha Chougule (@user-i)',
+  'Vedika Kannawar': 'Vedika Kannawar (@user-i)',
+  'Sanskriti Choudante': 'Sanskriti Choudante (@growth)',
+  'Gautami Kamath': 'Gautami Kamath (@growth)',
+  'Rohit Pandey': 'Rohit Pandey (@growth)',
+  'Ajay Landge': 'Ajay Landge (@growth)',
+  'Krishna Sable': 'Krishna Sable (@growth)',
+  'Shubham Kamble': 'Shubham Kamble (@growth)',
+  'Tejas Zurange': 'Tejas Zurange (@growth)',
+  'Sanket Nandanwar': 'Sanket Nandanwar (@growth)',
+  'Dhiraj Kakade': 'Dhiraj Kakade (@core)',
+  'Pooja Wable': 'Pooja Wable (@build)',
+};
