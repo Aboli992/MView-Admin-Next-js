@@ -34,3 +34,25 @@ export interface NotifHistoryItem {
   date: string;
   msg: string;
 }
+
+export interface ConstitutionOwnership {
+  section: string;
+  path?: string;
+}
+
+export interface MineralviewTeamMember {
+  id?: string;
+  name: string;
+  role?: string | null;
+  email: string;
+  github_handle?: string | null;
+  teams_handle?: string | null;
+  tags?: string[];
+  teams_channels?: string[];
+  resume_status?: 'missing' | 'uploaded' | 'pending';
+  resume?: string | null;
+  constitution_ownership?: ConstitutionOwnership[];
+  status?: 'active' | 'inactive' | 'leave' | 'onboarding';
+  created_at?: string;
+  updated_at?: string;
+}
