@@ -55,7 +55,7 @@ export async function createDailyUpdate(
 
   try {
     let attachmentMeta: {
-      path: string
+      url: string
       originalName: string
       mime: string
       size: number
@@ -68,7 +68,7 @@ export async function createDailyUpdate(
       })
       uploadedPath = uploaded.path
       attachmentMeta = {
-        path: uploaded.path,
+        url: uploaded.publicUrl,
         originalName: uploaded.originalName,
         mime: uploaded.mime,
         size: uploaded.size,
@@ -83,7 +83,7 @@ export async function createDailyUpdate(
       blockers_description: input.blockers_description ?? null,
       work_done: input.work_done,
       next_day_plan: input.next_day_plan ?? null,
-      attachment_path: attachmentMeta?.path ?? null,
+      attachment_path: attachmentMeta?.url ?? null,
       attachment_original_name: attachmentMeta?.originalName ?? null,
       attachment_mime_type: attachmentMeta?.mime ?? null,
       attachment_size: attachmentMeta?.size ?? null,

@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger'
 
 const log = logger.child('daily-update.storage')
 
-const DAILY_UPDATE_FOLDER = 'daily-updates'
+const DAILY_UPDATE_FOLDER = 'dailytask_attachfile'
 
 function slugify(value: string): string {
   return (
@@ -24,6 +24,7 @@ function extractExt(filename: string, fallback = 'bin'): string {
 
 export interface UploadedAttachment {
   path: string
+  publicUrl: string
   bucket: string
   size: number
   mime: string
@@ -52,10 +53,15 @@ export async function uploadDailyUpdateAttachment(params: {
     throw new StorageError(`Attachment upload failed: ${error.message}`)
   }
 
+  const { data: publicUrlData } = supabase.storage
+    .from(TEAM_BUCKET)
+    .getPublicUrl(objectPath)
+
   log.info('attachment uploaded', { path: objectPath, size: file.size })
 
   return {
     path: objectPath,
+    publicUrl: publicUrlData.publicUrl,
     bucket: TEAM_BUCKET,
     size: file.size,
     mime: file.type || 'application/octet-stream',
