@@ -11,25 +11,30 @@ interface Props {
 }
 
 const ROLE_OPTIONS = [
-  'Engineer',
-  'Product Manager',
-  'Designer',
   'Data Scientist',
-  'Operations',
-  'Marketing',
-  'Leadership',
-  'Other',
+  'Quality Assurance Engineer',
+  'Python Developer',
+  'Frontend Developer',
+  'Backend Developer',
+  'Content Writer',
+  'Video Editor',
+  'Graphic Designer',
+  'Sales and Marketing Specialist',
 ]
 
 const CONSTITUTION_SECTIONS = [
-  'Mission',
-  'Values',
-  'Operating Principles',
-  'Engineering',
-  'Product',
-  'Growth',
-  'Finance',
-  'People',
+  '00-system',
+  '01-foundations',
+  '02-platform-architecture',
+  '03-intelligence-systems',
+  '04-product-experience',
+  '05-growth-systems',
+  '06-data-systems',
+  '07-platform-operations',
+  '08-architecture-decisions',
+  '09-constitution-system',
+  '90-source-materials',
+  '95-analysis',
 ]
 
 const ACCEPTED_EXTS = ['.pdf', '.doc', '.docx']
