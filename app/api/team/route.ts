@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { createTeamMember } from '@/lib/services/team.service'
+import { createTeamMember, getAllTeamMembers } from '@/lib/services/team.service'
 import { createTeamMemberSchema } from '@/lib/validation/team.schema'
 import { handleError, newRequestId, ok } from '@/lib/api/response'
 import { UnsupportedMediaTypeError } from '@/lib/api/errors'
@@ -37,6 +37,27 @@ async function parseRequestBody(
   throw new UnsupportedMediaTypeError(
     'Content-Type must be application/json or multipart/form-data'
   )
+}
+
+export async function GET(): Promise<Response> {
+  const requestId = newRequestId()
+  const start = Date.now()
+
+  try {
+    log.info('GET /api/team', { requestId })
+
+    const members = await getAllTeamMembers()
+
+    log.info('GET /api/team completed', {
+      requestId,
+      count: members.length,
+      durationMs: Date.now() - start,
+    })
+
+    return ok(members, { meta: { requestId, count: members.length } })
+  } catch (err) {
+    return handleError(err, requestId)
+  }
 }
 
 export async function POST(req: NextRequest): Promise<Response> {

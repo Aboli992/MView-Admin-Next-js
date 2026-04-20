@@ -34,6 +34,22 @@ export async function insertTeamMember(
   return data as MineralviewTeamMember
 }
 
+export async function listTeamMembers(): Promise<MineralviewTeamMember[]> {
+  const supabase = getAdminSupabase()
+
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    log.error('list failed', { code: error.code, message: error.message })
+    throw new DatabaseError(`Failed to list team members: ${error.message}`)
+  }
+
+  return (data ?? []) as MineralviewTeamMember[]
+}
+
 export async function findTeamMemberByEmail(
   email: string
 ): Promise<MineralviewTeamMember | null> {

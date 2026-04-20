@@ -1,6 +1,6 @@
 import 'server-only'
 import { CreateTeamMemberInput, validateResumeFile } from '@/lib/validation/team.schema'
-import { insertTeamMember } from '@/lib/repositories/team.repository'
+import { insertTeamMember, listTeamMembers } from '@/lib/repositories/team.repository'
 import { removeResume, uploadResume } from '@/lib/storage/resume.storage'
 import { logger } from '@/lib/logger'
 import { AppError, PayloadTooLargeError, UnsupportedMediaTypeError, ValidationError } from '@/lib/api/errors'
@@ -11,6 +11,12 @@ const log = logger.child('team.service')
 export interface CreateTeamMemberParams {
   input: CreateTeamMemberInput
   resume: File | null
+}
+
+export async function getAllTeamMembers(): Promise<MineralviewTeamMember[]> {
+  const members = await listTeamMembers()
+  log.info('team members listed', { count: members.length })
+  return members
 }
 
 export async function createTeamMember(
