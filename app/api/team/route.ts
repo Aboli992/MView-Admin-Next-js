@@ -39,6 +39,32 @@ async function parseRequestBody(
   )
 }
 
+function buildSummary(members: Awaited<ReturnType<typeof getAllTeamMembers>>) {
+  const normalize = (v: string) => v.trim().toLowerCase().replace(/^[@#]+/, '')
+
+  const hasLabel = (member: (typeof members)[number], label: string) => {
+    const values = [...(member.tags ?? []), ...(member.teams_channels ?? [])]
+    return values.some((v) => normalize(v) === label)
+  }
+
+  let core = 0
+  let growth = 0
+  let resumes_missing = 0
+
+  for (const m of members) {
+    if (hasLabel(m, 'core')) core += 1
+    if (hasLabel(m, 'growth')) growth += 1
+    if ((m.resume_status ?? 'missing') !== 'uploaded') resumes_missing += 1
+  }
+
+  return {
+    total_members: members.length,
+    core,
+    growth,
+    resumes_missing,
+  }
+}
+
 export async function GET(): Promise<Response> {
   const requestId = newRequestId()
   const start = Date.now()
@@ -47,6 +73,7 @@ export async function GET(): Promise<Response> {
     log.info('GET /api/team', { requestId })
 
     const members = await getAllTeamMembers()
+    const summary = buildSummary(members)
 
     log.info('GET /api/team completed', {
       requestId,
@@ -54,7 +81,9 @@ export async function GET(): Promise<Response> {
       durationMs: Date.now() - start,
     })
 
-    return ok(members, { meta: { requestId, count: members.length } })
+    return ok(members, {
+      meta: { requestId, count: members.length, summary },
+    })
   } catch (err) {
     return handleError(err, requestId)
   }

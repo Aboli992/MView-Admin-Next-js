@@ -21,10 +21,10 @@ out/
 # Production build
 build/
 
-# Misc
-.DS_Store
-.env
-.env.*
+# # Misc
+# .DS_Store
+# .env
+# .env.*
 
 # VS Code settings
 .vscode/
