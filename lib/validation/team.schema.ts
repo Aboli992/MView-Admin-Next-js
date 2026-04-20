@@ -55,6 +55,24 @@ export const createTeamMemberSchema = z.object({
 
 export type CreateTeamMemberInput = z.infer<typeof createTeamMemberSchema>
 
+export const updateTeamMemberSchema = z
+  .object({
+    name: z.string().trim().min(1, 'name is required').max(120).optional(),
+    email: z.email('invalid email').trim().toLowerCase().max(255).optional(),
+    role: z.string().trim().max(120).optional().nullable(),
+    github_handle: z.string().trim().max(120).optional().nullable(),
+    teams_handle: z.string().trim().max(120).optional().nullable(),
+    tags: tagsFromUnknown.optional(),
+    teams_channels: tagsFromUnknown.optional(),
+    constitution_ownership: ownershipFromUnknown.optional(),
+    status: z.enum(MEMBER_STATUS).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, {
+    message: 'at least one field must be provided',
+  })
+
+export type UpdateTeamMemberInput = z.infer<typeof updateTeamMemberSchema>
+
 export const RESUME_MAX_BYTES = 10 * 1024 * 1024 // 10 MB
 export const RESUME_ALLOWED_MIME = [
   'application/pdf',
