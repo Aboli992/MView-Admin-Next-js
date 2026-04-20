@@ -40,6 +40,23 @@ export interface ConstitutionOwnership {
   path?: string;
 }
 
+export interface DailyUpdate {
+  id?: number;
+  user_id: number;
+  user_name: string;
+  submission_date: string;
+  blockers_status: 'no_blockers' | 'has_blockers';
+  blockers_description?: string | null;
+  work_done: string;
+  next_day_plan?: string | null;
+  attachment_path?: string | null;
+  attachment_original_name?: string | null;
+  attachment_mime_type?: string | null;
+  attachment_size?: number | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface MineralviewTeamMember {
   id?: string;
   name: string;
