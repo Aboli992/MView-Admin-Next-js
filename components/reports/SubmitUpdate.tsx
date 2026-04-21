@@ -58,6 +58,9 @@ export default function SubmitUpdate({ flash }: Props) {
   const [loadingToday, setLoadingToday] = useState(true)
   const [todayError, setTodayError] = useState<string | null>(null)
 
+  const [teamMembers, setTeamMembers] = useState<{ id: string; name: string }[]>([])
+  const [loadingTeam, setLoadingTeam] = useState(false)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const loadToday = useCallback(async () => {
@@ -78,6 +81,33 @@ export default function SubmitUpdate({ flash }: Props) {
   }, [])
 
   useEffect(() => { loadToday() }, [loadToday])
+
+  useEffect(() => {
+    let cancelled = false
+    const loadTeam = async () => {
+      setLoadingTeam(true)
+      try {
+        const res = await fetch('/api/team/summary', { cache: 'no-store' })
+        const json = await res.json()
+        if (!res.ok || !json?.success) {
+          throw new Error(json?.error?.message ?? `Failed to load team (${res.status})`)
+        }
+        if (!cancelled) setTeamMembers(json.data as { id: string; name: string }[])
+      } catch {
+        if (!cancelled) setTeamMembers([])
+      } finally {
+        if (!cancelled) setLoadingTeam(false)
+      }
+    }
+    loadTeam()
+    return () => { cancelled = true }
+  }, [])
+
+  const onSelectName = (selectedName: string) => {
+    setName(selectedName)
+    const match = teamMembers.find((m) => m.name === selectedName)
+    setUserId(match ? String(match.id) : '')
+  }
 
   const handleFile = useCallback((f: File | null) => {
     setFormError(null)
@@ -111,7 +141,7 @@ export default function SubmitUpdate({ flash }: Props) {
 
   const resetForm = () => {
     setName('')
-    setUserId('1')
+    setUserId('')
     setUpdate('')
     setTags('')
     setStatus('done')
@@ -188,21 +218,24 @@ export default function SubmitUpdate({ flash }: Props) {
             <div className="fld-row">
               <div className="fld">
                 <label className="fld-l">Name <span className="req">*</span></label>
-                <input
-                  type="text"
+                <select
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Jane Doe"
+                  onChange={(e) => onSelectName(e.target.value)}
                   required
-                />
+                  disabled={loadingTeam}
+                >
+                  <option value="">{loadingTeam ? 'Loading…' : 'Select a team member'}</option>
+                  {teamMembers.map((m) => (
+                    <option key={m.id} value={m.name}>{m.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="fld">
                 <label className="fld-l">User ID <span className="req">*</span></label>
                 <input
-                  type="number"
-                  min={1}
+                  type="text"
                   value={userId}
-                  onChange={(e) => setUserId(e.target.value)}
+                  readOnly
                   required
                 />
               </div>
