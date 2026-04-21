@@ -58,7 +58,7 @@ export default function SubmitUpdate({ flash }: Props) {
   const [loadingToday, setLoadingToday] = useState(true)
   const [todayError, setTodayError] = useState<string | null>(null)
 
-  const [teamMembers, setTeamMembers] = useState<{ id: string; name: string }[]>([])
+  const [teamMembers, setTeamMembers] = useState<{ user_id: string; name: string }[]>([])
   const [loadingTeam, setLoadingTeam] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -92,7 +92,7 @@ export default function SubmitUpdate({ flash }: Props) {
         if (!res.ok || !json?.success) {
           throw new Error(json?.error?.message ?? `Failed to load team (${res.status})`)
         }
-        if (!cancelled) setTeamMembers(json.data as { id: string; name: string }[])
+        if (!cancelled) setTeamMembers(json.data as { user_id: string; name: string }[])
       } catch {
         if (!cancelled) setTeamMembers([])
       } finally {
@@ -106,7 +106,7 @@ export default function SubmitUpdate({ flash }: Props) {
   const onSelectName = (selectedName: string) => {
     setName(selectedName)
     const match = teamMembers.find((m) => m.name === selectedName)
-    setUserId(match ? String(match.id) : '')
+    setUserId(match ? String(match.user_id) : '')
   }
 
   const handleFile = useCallback((f: File | null) => {
@@ -157,6 +157,7 @@ export default function SubmitUpdate({ flash }: Props) {
     setFormError(null)
 
     if (!name.trim()) return setFormError('Name is required.')
+    if (!userId.trim()) return setFormError('Please select a team member.')
     if (!update.trim()) return setFormError('Update is required.')
     const parsedUserId = Number.parseInt(userId, 10)
     if (!Number.isFinite(parsedUserId) || parsedUserId <= 0) {
@@ -226,19 +227,21 @@ export default function SubmitUpdate({ flash }: Props) {
                 >
                   <option value="">{loadingTeam ? 'Loading…' : 'Select a team member'}</option>
                   {teamMembers.map((m) => (
-                    <option key={m.id} value={m.name}>{m.name}</option>
+                    <option key={m.user_id} value={m.name}>{m.name}</option>
                   ))}
                 </select>
               </div>
-              <div className="fld">
-                <label className="fld-l">User ID <span className="req">*</span></label>
-                <input
-                  type="text"
-                  value={userId}
-                  readOnly
-                  required
-                />
-              </div>
+              {userId && (
+                <div className="fld">
+                  <label className="fld-l">User ID <span className="req">*</span></label>
+                  <input
+                    type="text"
+                    value={userId}
+                    readOnly
+                    required
+                  />
+                </div>
+              )}
             </div>
 
             <div className="fld">
