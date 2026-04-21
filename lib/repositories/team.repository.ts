@@ -147,7 +147,7 @@ export async function listTeamMemberSummaries(): Promise<TeamMemberSummary[]> {
 
   const { data, error } = await supabase
     .from(TABLE)
-    .select('id, name')
+    .select('user_id, name')
     .order('name', { ascending: true })
 
   if (error) {
