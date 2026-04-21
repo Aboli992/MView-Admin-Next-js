@@ -14,7 +14,7 @@ export type TeamMemberInsert = Omit<MineralviewTeamMember, 'id' | 'created_at' |
 export type TeamMemberUpdate = Partial<TeamMemberInsert>
 
 export interface TeamMemberSummary {
-  id: string
+  user_id: string
   name: string
 }
 
