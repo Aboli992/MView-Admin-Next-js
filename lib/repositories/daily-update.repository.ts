@@ -44,3 +44,47 @@ export async function listDailyUpdatesBySubmissionDate(
 
   return (data ?? []) as DailyUpdate[]
 }
+
+export async function listDailyUpdatesByDateRange(
+  startDate: string,
+  endDate: string
+): Promise<DailyUpdate[]> {
+  const supabase = getAdminSupabase()
+
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*')
+    .gte('submission_date', startDate)
+    .lte('submission_date', endDate)
+    .order('submission_date', { ascending: true })
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    log.error('list by range failed', {
+      code: error.code,
+      message: error.message,
+      startDate,
+      endDate,
+    })
+    throw new DatabaseError(`Failed to list daily updates: ${error.message}`)
+  }
+
+  return (data ?? []) as DailyUpdate[]
+}
+
+export async function listAllDailyUpdates(): Promise<DailyUpdate[]> {
+  const supabase = getAdminSupabase()
+
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*')
+    .order('submission_date', { ascending: false })
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    log.error('list all failed', { code: error.code, message: error.message })
+    throw new DatabaseError(`Failed to list daily updates: ${error.message}`)
+  }
+
+  return (data ?? []) as DailyUpdate[]
+}
