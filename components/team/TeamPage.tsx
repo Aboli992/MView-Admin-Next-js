@@ -13,10 +13,32 @@ interface Summary {
   resumes_missing: number
 }
 
+interface EditDraft {
+  name: string
+  role: string
+  email: string
+  tags: string
+  constitution_section: string
+}
+
 function fileNameFromPath(path: string | null | undefined): string | null {
   if (!path) return null
   const parts = path.split(/[\\/]/)
   return parts[parts.length - 1] || path
+}
+
+function buildDraft(m: MineralviewTeamMember): EditDraft {
+  const sections = (m.constitution_ownership ?? [])
+    .map((o) => o.section)
+    .filter(Boolean)
+    .join(', ')
+  return {
+    name: m.name ?? '',
+    role: m.role ?? '',
+    email: m.email ?? '',
+    tags: (m.tags ?? []).join(', '),
+    constitution_section: sections,
+  }
 }
 
 export default function TeamPage({ flash }: Props) {
@@ -25,6 +47,12 @@ export default function TeamPage({ flash }: Props) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [draft, setDraft] = useState<EditDraft | null>(null)
+  const [savingId, setSavingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [rowError, setRowError] = useState<{ id: string; message: string } | null>(null)
 
   const loadTeam = useCallback(async () => {
     setLoading(true)
@@ -63,6 +91,102 @@ export default function TeamPage({ flash }: Props) {
     setMembers((prev) => [m, ...prev])
     loadTeam()
   }, [loadTeam])
+
+  const startEdit = useCallback((m: MineralviewTeamMember) => {
+    if (!m.id) return
+    setRowError(null)
+    setEditingId(m.id)
+    setDraft(buildDraft(m))
+  }, [])
+
+  const cancelEdit = useCallback(() => {
+    setEditingId(null)
+    setDraft(null)
+    setRowError(null)
+  }, [])
+
+  const saveEdit = useCallback(async (id: string) => {
+    if (!draft) return
+    if (!draft.name.trim()) {
+      setRowError({ id, message: 'Name is required.' })
+      return
+    }
+    if (!draft.email.trim()) {
+      setRowError({ id, message: 'Email is required.' })
+      return
+    }
+
+    const body: Record<string, unknown> = {
+      name: draft.name.trim(),
+      email: draft.email.trim(),
+      role: draft.role.trim() || null,
+      tags: draft.tags
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean),
+      constitution_ownership: draft.constitution_section
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((section) => ({ section })),
+    }
+
+    setSavingId(id)
+    setRowError(null)
+    try {
+      const res = await fetch(`/api/team/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const json = await res.json()
+      if (!res.ok || !json?.success) {
+        const msg = json?.error?.message ?? `Update failed (${res.status})`
+        setRowError({ id, message: msg })
+        flash(msg)
+        return
+      }
+      const updated = json.data as MineralviewTeamMember
+      setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, ...updated } : m)))
+      setEditingId(null)
+      setDraft(null)
+      flash('Team member updated')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Network error'
+      setRowError({ id, message: msg })
+      flash(msg)
+    } finally {
+      setSavingId(null)
+    }
+  }, [draft, flash])
+
+  const deleteMember = useCallback(async (m: MineralviewTeamMember) => {
+    if (!m.id) return
+    const confirmed = window.confirm(`Are you sure you want to delete ${m.name}?`)
+    if (!confirmed) return
+
+    setDeletingId(m.id)
+    setRowError(null)
+    try {
+      const res = await fetch(`/api/team/${m.id}`, { method: 'DELETE' })
+      const json = await res.json()
+      if (!res.ok || !json?.success) {
+        const msg = json?.error?.message ?? `Delete failed (${res.status})`
+        setRowError({ id: m.id, message: msg })
+        flash(msg)
+        return
+      }
+      setMembers((prev) => prev.filter((x) => x.id !== m.id))
+      if (editingId === m.id) cancelEdit()
+      flash('Team member deleted')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Network error'
+      setRowError({ id: m.id, message: msg })
+      flash(msg)
+    } finally {
+      setDeletingId(null)
+    }
+  }, [flash, editingId, cancelEdit])
 
   return (
     <div>
@@ -145,6 +269,90 @@ export default function TeamPage({ flash }: Props) {
                 .filter(Boolean)
                 .join(', ')
               const resumeName = fileNameFromPath(m.resume)
+              const isEditing = !!m.id && editingId === m.id
+              const isSaving = !!m.id && savingId === m.id
+              const isDeleting = !!m.id && deletingId === m.id
+              const showRowError = !!m.id && rowError?.id === m.id
+
+              if (isEditing && draft) {
+                return (
+                  <tr key={m.id ?? m.email}>
+                    <td>
+                      <input
+                        type="text"
+                        value={draft.name}
+                        onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                        disabled={isSaving}
+                        style={{ width: '100%' }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        value={draft.role}
+                        onChange={(e) => setDraft({ ...draft, role: e.target.value })}
+                        disabled={isSaving}
+                        style={{ width: '100%' }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="email"
+                        value={draft.email}
+                        onChange={(e) => setDraft({ ...draft, email: e.target.value })}
+                        disabled={isSaving}
+                        style={{ width: '100%' }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        value={draft.tags}
+                        onChange={(e) => setDraft({ ...draft, tags: e.target.value })}
+                        disabled={isSaving}
+                        placeholder="comma, separated"
+                        style={{ width: '100%' }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        value={draft.constitution_section}
+                        onChange={(e) => setDraft({ ...draft, constitution_section: e.target.value })}
+                        disabled={isSaving}
+                        placeholder="comma, separated"
+                        style={{ width: '100%' }}
+                      />
+                    </td>
+                    <td>
+                      {resumeName ?? <span className="badge br"><span className="bd" />missing</span>}
+                    </td>
+                    <td className="admin-only">
+                      <button
+                        className="btn btn-p btn-sm"
+                        onClick={() => m.id && saveEdit(m.id)}
+                        disabled={isSaving}
+                        style={{ marginRight: 4 }}
+                      >
+                        {isSaving ? 'Saving…' : 'Save'}
+                      </button>
+                      <button
+                        className="btn btn-sm"
+                        onClick={cancelEdit}
+                        disabled={isSaving}
+                      >
+                        Cancel
+                      </button>
+                      {showRowError && (
+                        <div style={{ color: 'var(--efg)', fontSize: 11, marginTop: 4 }}>
+                          {rowError?.message}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                )
+              }
+
               return (
                 <tr key={m.id ?? m.email}>
                   <td style={{ fontWeight: 500, color: 'var(--fg)' }}>{m.name}</td>
@@ -181,12 +389,24 @@ export default function TeamPage({ flash }: Props) {
                   <td className="admin-only">
                     <button
                       className="btn btn-sm"
-                      onClick={() => flash('Edit coming soon')}
+                      onClick={() => startEdit(m)}
+                      disabled={isDeleting || !m.id}
                       style={{ marginRight: 4 }}
                     >
                       Edit
                     </button>
-                    <button className="btn btn-sm" onClick={() => flash('Delete coming soon')}>Delete</button>
+                    <button
+                      className="btn btn-sm"
+                      onClick={() => deleteMember(m)}
+                      disabled={isDeleting || !m.id}
+                    >
+                      {isDeleting ? 'Deleting…' : 'Delete'}
+                    </button>
+                    {showRowError && (
+                      <div style={{ color: 'var(--efg)', fontSize: 11, marginTop: 4 }}>
+                        {rowError?.message}
+                      </div>
+                    )}
                   </td>
                 </tr>
               )
